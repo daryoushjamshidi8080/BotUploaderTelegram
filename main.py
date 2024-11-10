@@ -1,5 +1,6 @@
 #Librarys
 from pyrogram import Client,filters
+import asyncio
 import apis
 from buttons import Buttons
 from quesfuser import Response
@@ -36,10 +37,31 @@ receive_media = ReceiveMedia(bot, response, buttons)
 send_media = SendMedia(db_manager) 
 
 
-
-
-@bot.on_message()
+@bot.on_message(filters.command("start"))
 async def main(cleint, message):
+    
+    
+    # get movie 
+    if message.text[7:]:
+        #send notification
+        notification = await message.reply_text(''' 
+                                                فقط ۱۰ ثانیه وقت فرواید فیلم هارو داری 
+                                                
+                                                درصورت نیاز دوباره روی لینک بزنید''')
+        
+        await send_media.send_medi(message.text[7:], message) # send media 
+
+ 
+        await asyncio.sleep(5) # time sleep
+        await notification.delete()# delete notification
+    else:
+        await message.reply_text(f'''
+    برای استفاده از این ربات باید در کانال زیر عضو شوید
+    کانال:
+    برای سفارش ساخت ربات تلگرام به ایدی زیر پیام دهید
+    اید:
+''')
+
 
     if message.text == 'میخوام فیلم آپلود کنم' and message.chat.id == 1655307519:
         await message.reply_text('''
@@ -51,12 +73,7 @@ async def main(cleint, message):
         await message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_upload())
 
 
-    # get movie 
-    try:
-        await send_media.send_medi(message.text[7:], message)
-        print(message.text[7:])
-    except:
-        pass
+    
 
 
 
@@ -79,16 +96,43 @@ async def hande_callback_query(client, callback_query):
             db_manager.insert_path_link('0')
             path_link = db_manager.fetch_path_link()[0][0]
             db_manager.insert_path_media((file_id,path_link))
-            await callback_query.message.reply_text(f'https://t.me/PajPajbot?start={path_link}', reply_markup=buttons.menu_upload())
+            await callback_query.message.reply_text(f'''
+            باموفقیت ذخیره شد 
+                                                    
+            https://t.me/PajPajbot?start={path_link}
+
+''', reply_markup=buttons.menu_upload())
+            
+            #send message for user
+            await callback_query.message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_upload())
+
         
 
 
     elif callback_query.data == 'collective_upload_movie':
-        await callback_query.message.reply_text('''
-    فیلم های مورد نضر خود رو وارد کن
-    در آخر دکمه پایان را بزن
- ''', reply_markup=buttons.menu_end())
         
+        await callback_query.message.reply_text('فیلم مورد نظر خود را بفرس:')# send message for user 
+
+        resulte_response = await response.respons_text(bot, 1655307519)# get response
+        file_id_list = await receive_media.get_media_collective(resulte_response)
+        
+        if file_id_list :
+            db_manager.insert_path_link('0')
+            path_link = db_manager.fetch_path_link()[0][0]
+
+            for link in file_id_list :
+                db_manager.insert_path_media((link,path_link))
+
+            await callback_query.message.reply_text(f'''
+            باموفقیت ذخیره شد 
+                                                    
+            https://t.me/PajPajbot?start={path_link}
+
+''', reply_markup=buttons.menu_upload())
+            
+            #send message for user
+            await callback_query.message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_upload())
+            
 
 
 
