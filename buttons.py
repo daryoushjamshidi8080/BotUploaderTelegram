@@ -12,6 +12,14 @@ class Buttons:
         )
 
         return upload_button
+    #menu end loop
+    def menu_end(self):
+        end_button= ReplyKeyboardMarkup(
+            [
+                ['پایان']
+            ],resize_keyboard=True
+        )
+        return end_button
     # selection menu for upload movie
     def menu_selection(self):
         selection_button= InlineKeyboardMarkup(
