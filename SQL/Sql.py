@@ -51,6 +51,7 @@ class DatabaseManager:
         finally:
             self.close()
 
+
     # fetch path link 
     def fetch_path_link(self):
         try:
@@ -60,5 +61,17 @@ class DatabaseManager:
             return results_data
         except Exception as e :
             print('Error in fetch user_id of show id is : ',e)
+        finally:
+            self.close()
+
+    # fetch link of path movie  
+    def fetch_file_id(self, path_link):
+        try:
+            self.open()
+            self.cur.execute("SELECT path_movie FROM path_movie WHERE PlinkID = %s", (int(path_link),))
+            results_data = self.cur.fetchall()
+            return results_data
+        except Exception as e:
+            print('Error in fetch_file_id:', e)
         finally:
             self.close()

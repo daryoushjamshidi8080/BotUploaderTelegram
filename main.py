@@ -3,7 +3,7 @@ from pyrogram import Client,filters
 import apis
 from buttons import Buttons
 from quesfuser import Response
-from receivemedia import ReceiveMedia
+from receivemedia import ReceiveMedia, SendMedia
 from SQL.Sql import DatabaseManager
 
 
@@ -32,6 +32,8 @@ buttons = Buttons()
 response = Response()
 #Object get medie 
 receive_media = ReceiveMedia(bot, response, buttons)
+#send media 
+send_media = SendMedia(db_manager) 
 
 
 
@@ -47,6 +49,15 @@ async def main(cleint, message):
     
     elif message.chat.id == 1655307519 :
         await message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_upload())
+
+
+    # get movie 
+    try:
+        await send_media.send_medi(message.text[7:], message)
+        print(message.text[7:])
+    except:
+        pass
+
 
 
 
@@ -68,7 +79,7 @@ async def hande_callback_query(client, callback_query):
             db_manager.insert_path_link('0')
             path_link = db_manager.fetch_path_link()[0][0]
             db_manager.insert_path_media((file_id,path_link))
-            await callback_query.message.reply_text('ایدی دانلود', reply_markup=buttons.menu_upload())
+            await callback_query.message.reply_text(f'https://t.me/PajPajbot?start={path_link}', reply_markup=buttons.menu_upload())
         
 
 
