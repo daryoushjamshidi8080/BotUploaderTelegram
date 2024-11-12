@@ -4,10 +4,11 @@ from pyrogram.types import (ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKey
 
 class Buttons:
     # menu button upload admin
-    def menu_upload(self):
+    def menu_main(self):
         upload_button =  ReplyKeyboardMarkup(
             [
-                ['میخوام فیلم آپلود کنم']
+                ['میخوام فیلم آپلود کنم'],
+                ['پیام دسته جمعی'],['استعلام تعداد کاربرها']
             ],resize_keyboard=True
         )
 
@@ -28,3 +29,14 @@ class Buttons:
             ]
         )
         return selection_button
+    
+    #menu join chanels 
+    def menu_join_chanel(self):
+        join_chanel_buttons = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton('🎬کانال اول', url="https://t.me/textchanell90")],
+                [InlineKeyboardButton('🔞کانال دوم', url='https://t.me/dj_vpn80')],
+                
+            ]
+        )
+        return join_chanel_buttons
