@@ -95,7 +95,19 @@ class DatabaseManager:
             self.cur.execute("INSERT INTO users(chat_id) VALUES (%s)",  (chat_id,))
             self.conn.commit()#seting qeury to database
         except Exception as e :
-            print(f"Error insert path link: {e}")
+            print(f"Error insert chat id : {e}")
             self.conn.rollback()#Remove half operations
+        finally:
+            self.close()
+            
+    # Fetches the total count of unique chat IDs in the users table
+    def fetch_count_users(self):
+        try:
+            self.open()
+            self.cur.execute('SELECT COUNT(chat_id) FROM users')
+            result_data = self.cur.fetchone()  # fetchone used for a single result
+            return result_data[0]  # return the count as an integer
+        except Exception as e:
+            print('Error in fetching count of chat IDs:', e)
         finally:
             self.close()

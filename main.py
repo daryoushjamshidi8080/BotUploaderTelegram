@@ -130,11 +130,12 @@ async def main(cleint, message):
             تکی یا دست جمعی
 ''', reply_markup=buttons.menu_selection())
     
-    elif message.text == 'پیام دسته جمعی' :
+    elif message.text == 'پیام دسته جمعی' and message.chat.id ==  1655307519:
         pass
-
     elif message.text == 'استعلام تعداد کاربرها':
-        pass
+        count = db_manager.fetch_count_users()
+        await message.reply_text(f'تعداد کاربرانی که از این ربات استفاده میکند {count}', reply_markup=buttons.menu_main())
+
     
     elif message.chat.id == 1655307519 :
         await message.reply_text('چیکار کنم برات حاجی', reply_markup=buttons.menu_main())
