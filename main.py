@@ -46,6 +46,16 @@ notif_join_channel = {} # dictionary save notification massage for join to chann
 @bot.on_message(filters.command("start") and filters.private)
 async def main(cleint, message):
 
+
+        
+    # Check if user is already in the database; if not, store their chat ID for the first interaction
+    users = db_manager.fetch_file_id(message.chat.id)
+
+    if not users:
+        db_manager.insert_chat_id(message.chat.id)
+
+
+
     user_join_status = 0 # varibel for send not join to chanel user
     global notif_join_channel, notification
 

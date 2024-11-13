@@ -75,3 +75,27 @@ class DatabaseManager:
             print('Error in fetch_file_id:', e)
         finally:
             self.close()
+
+    #fetch chat id of users table
+    def fetch_file_id(self, chat_id):
+        try:
+            self.open()
+            self.cur.execute("SELECT chat_id FROM users WHERE chat_id = %s", (chat_id,))
+            results_data = self.cur.fetchall()
+            return True if results_data else False
+        except Exception as e:
+            print('Error in fetch_file_id:', e)
+        finally:
+            self.close()
+
+    #Insert chat ID into the users table when the user joins the bot for the first time   
+    def insert_chat_id(self, chat_id):
+        try:
+            self.open()
+            self.cur.execute("INSERT INTO users(chat_id) VALUES (%s)",  (chat_id,))
+            self.conn.commit()#seting qeury to database
+        except Exception as e :
+            print(f"Error insert path link: {e}")
+            self.conn.rollback()#Remove half operations
+        finally:
+            self.close()
