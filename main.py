@@ -46,7 +46,7 @@ notif_join_channel = {} # dictionary save notification massage for join to chann
 @bot.on_message(filters.command("start") and filters.private)
 async def main(cleint, message):
 
-    nott = 0 # varibel for send not join to chanel user
+    user_join_status = 0 # varibel for send not join to chanel user
     global notif_join_channel, notification
 
 
@@ -92,16 +92,14 @@ async def main(cleint, message):
         
             message_join_channel = await message.reply_text("برای استفاده از ربات باید عضو کانال ها شوید",reply_markup=buttons.menu_join_chanel())
             notif_join_channel[str(user_id)] = message_join_channel
-            nott = 1
+            user_join_status = 1
         else:
             await message.reply_text(f"An error occurred: {e}")
 
     
     
-    # send message for admin or user 
-    if message.chat.id == 1655307519 :
-        await message.reply_text('چیکار کنم برات حاجی', reply_markup=buttons.menu_main())
-    elif nott != 1:
+    # send message for user 
+    if user_join_status != 1 and not (message.chat.id == 1655307519): 
         await message.reply_text(f'''
     برای استفاده از این ربات باید از لینک های
 داخل کانال استفاده کنید
@@ -112,11 +110,24 @@ async def main(cleint, message):
         
 
 
+
+    # send message for admin 
+
+
     if message.text == 'میخوام فیلم آپلود کنم' and message.chat.id == 1655307519:
         notification =  await message.reply_text('''
             روش آپلودتو انتخاب کن 
             تکی یا دست جمعی
 ''', reply_markup=buttons.menu_selection())
+    
+    elif message.text == 'پیام دسته جمعی' :
+        pass
+
+    elif message.text == 'استعلام تعداد کاربرها':
+        pass
+    
+    elif message.chat.id == 1655307519 :
+        await message.reply_text('چیکار کنم برات حاجی', reply_markup=buttons.menu_main())
 
 
 
@@ -157,7 +168,13 @@ async def hande_callback_query(client, callback_query):
             
             #send message for user
             await callback_query.message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_main())
+    
+        else :
+            
+            #send message for user
+            await callback_query.message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_main())
 
+            
         
 
     # get loop movie 
@@ -186,7 +203,14 @@ async def hande_callback_query(client, callback_query):
             
             #send message for user
             await callback_query.message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_main())
+    
+        else :
             
+            #send message for user
+            await callback_query.message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_main())
+
+            
+        
 
 
 
