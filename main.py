@@ -131,9 +131,37 @@ async def main(cleint, message):
 ''', reply_markup=buttons.menu_selection())
     
     elif message.text == 'پیام دسته جمعی' and message.chat.id ==  1655307519:
-        pass
-    elif message.text == 'استعلام تعداد کاربرها':
+        
+        # Sending message to admin for initial prompt
+        await bot.send_message(message.chat.id, "پیام خود را بفرستین")
+
+        # Asking questions to the admin
+        public_message = await response.respons_text(bot, message.chat.id)
+
+        # Fetching all chat IDs of users
+        chat_id_all_users = db_manager.fetch_chat_id_all_user()
+
+        # Sending the message to all users based on content type
+        for chat_id_user in chat_id_all_users:
+            if public_message.video:
+                await bot.send_video(chat_id_user[0], video=public_message.video.file_id, caption=public_message.caption)
+
+            elif public_message.photo:
+                await bot.send_photo(chat_id_user[0], photo=public_message.photo.file_id, caption=public_message.caption)
+                print(public_message)
+
+            else:
+                await bot.send_message(chat_id_user[0], text=public_message.text)
+
+        # Confirmation message to admin
+        await bot.send_message(message.chat.id, "باموفقیت ارسال شد")
+
+
+    elif message.text == 'استعلام تعداد کاربرها' and message.chat.id == 1655307519:
+        
+        #fetch count users of database
         count = db_manager.fetch_count_users()
+        #send message for admin 
         await message.reply_text(f'تعداد کاربرانی که از این ربات استفاده میکند {count}', reply_markup=buttons.menu_main())
 
     

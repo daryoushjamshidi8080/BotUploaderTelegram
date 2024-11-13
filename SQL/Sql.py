@@ -99,7 +99,7 @@ class DatabaseManager:
             self.conn.rollback()#Remove half operations
         finally:
             self.close()
-            
+
     # Fetches the total count of unique chat IDs in the users table
     def fetch_count_users(self):
         try:
@@ -111,3 +111,16 @@ class DatabaseManager:
             print('Error in fetching count of chat IDs:', e)
         finally:
             self.close()
+
+    #Fetches all chat IDs of users in the table
+    def fetch_chat_id_all_user(self):
+        try:
+            self.open()
+            self.cur.execute('SELECT chat_id FROM users')
+            result_data = self.cur.fetchall() 
+            return result_data 
+        except Exception as e:
+            print('Error in fetching chat id of users table:', e)
+        finally:
+            self.close()
+        
