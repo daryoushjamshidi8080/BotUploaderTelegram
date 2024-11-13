@@ -148,7 +148,6 @@ async def main(cleint, message):
 
             elif public_message.photo:
                 await bot.send_photo(chat_id_user[0], photo=public_message.photo.file_id, caption=public_message.caption)
-                print(public_message)
 
             else:
                 await bot.send_message(chat_id_user[0], text=public_message.text)
