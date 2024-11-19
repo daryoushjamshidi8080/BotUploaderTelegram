@@ -5,10 +5,9 @@ import apis
 from buttons import Buttons
 from quesfuser import Response
 from receivemedia import ReceiveMedia, SendMedia
-from SQL.Sql import DatabaseManager
 from pyrogram.types import ChatMemberUpdated
 from pyrogram.enums import ChatMemberStatus
-
+from  Sql import DatabaseManager
 
 # Bot initialization
 bot = Client(
@@ -21,7 +20,7 @@ bot = Client(
 
 # Database connection
 db_manager = DatabaseManager(
-    dbname='uploader_bot_telegram',
+    dbname='bot_uploader_telegram',
     user='postgres',
     password='12345',
     host='127.0.0.1',
@@ -38,6 +37,8 @@ receive_media = ReceiveMedia(bot, response, buttons)
 send_media = SendMedia(db_manager) 
 
 
+user_states = {}
+list_file_id = []
 
 notification = None
 notif_join_channel = {} # dictionary save notification massage for join to channel
@@ -45,11 +46,12 @@ notif_join_channel = {} # dictionary save notification massage for join to chann
 
 @bot.on_message(filters.command("start") and filters.private)
 async def main(cleint, message):
+    global user_states, list_file_id
 
 
         
     # Check if user is already in the database; if not, store their chat ID for the first interaction
-    users = db_manager.fetch_file_id(message.chat.id)
+    users = db_manager.fetch_user_id(message.chat.id)
 
     if not users:
         db_manager.insert_chat_id(message.chat.id)
@@ -61,7 +63,7 @@ async def main(cleint, message):
 
 
     user_id = message.from_user.id  # ID The user who sent the command
-    chat_id = "@textchanell90", '@dj_vpn80'  # Replace with channel username
+    chat_id = "@textchanell90", '@fight_club_live'  # Replace with channel username
 
     try:
         # get member of channel 
@@ -71,7 +73,7 @@ async def main(cleint, message):
 
         if member_one_channel.status.name in['MEMBER', 'ADMINISTRATOR','OWNER'] and \
            member_two_channel.status.name in['MEMBER', 'ADMINISTRATOR','OWNER'] and \
-            not(user_id == 1655307519):
+            not(user_id in  [1655307519, 7221338346]):
 
 
             # Delete notification for join to channel
@@ -109,7 +111,7 @@ async def main(cleint, message):
     
     
     # send message for user 
-    if user_join_status != 1 and not (message.chat.id == 1655307519): 
+    if user_join_status != 1 and not (message.chat.id in [1655307519, 7221338346]): 
         await message.reply_text(f'''
     برای استفاده از این ربات باید از لینک های
 داخل کانال استفاده کنید
@@ -124,39 +126,22 @@ async def main(cleint, message):
     # send message for admin 
 
 
-    if message.text == 'میخوام فیلم آپلود کنم' and message.chat.id == 1655307519:
+    if message.text == 'میخوام فیلم آپلود کنم' and message.chat.id in [1655307519, 7221338346]:
         notification =  await message.reply_text('''
             روش آپلودتو انتخاب کن 
             تکی یا دست جمعی
 ''', reply_markup=buttons.menu_selection())
     
-    elif message.text == 'پیام دسته جمعی' and message.chat.id ==  1655307519:
+    elif message.text == 'پیام دسته جمعی' and message.chat.id in [1655307519, 7221338346]:
         
         # Sending message to admin for initial prompt
         await bot.send_message(message.chat.id, "پیام خود را بفرستین")
-
-        # Asking questions to the admin
-        public_message = await response.respons_text(bot, message.chat.id)
-
-        # Fetching all chat IDs of users
-        chat_id_all_users = db_manager.fetch_chat_id_all_user()
-
-        # Sending the message to all users based on content type
-        for chat_id_user in chat_id_all_users:
-            if public_message.video:
-                await bot.send_video(chat_id_user[0], video=public_message.video.file_id, caption=public_message.caption)
-
-            elif public_message.photo:
-                await bot.send_photo(chat_id_user[0], photo=public_message.photo.file_id, caption=public_message.caption)
-
-            else:
-                await bot.send_message(chat_id_user[0], text=public_message.text)
-
-        # Confirmation message to admin
-        await bot.send_message(message.chat.id, "باموفقیت ارسال شد")
+        user_states[message.chat.id] = 'send_message'
+        return
 
 
-    elif message.text == 'استعلام تعداد کاربرها' and message.chat.id == 1655307519:
+
+    elif message.text == 'استعلام تعداد کاربرها' and message.chat.id in [1655307519, 7221338346]:
         
         #fetch count users of database
         count = db_manager.fetch_count_users()
@@ -164,18 +149,128 @@ async def main(cleint, message):
         await message.reply_text(f'تعداد کاربرانی که از این ربات استفاده میکند {count}', reply_markup=buttons.menu_main())
 
     
-    elif message.chat.id == 1655307519 :
+    elif message.chat.id in [1655307519, 7221338346] and not(message.chat.id in user_states):
         await message.reply_text('چیکار کنم برات حاجی', reply_markup=buttons.menu_main())
 
 
+    if message.chat.id in user_states :
+
+
+        #get answer
+        if user_states[message.chat.id] == 'send_message':
+            # Fetching all chat IDs of users
+            chat_id_all_users = db_manager.fetch_chat_id_all_user()
+
+            # Sending the message to all users based on content type
+            for chat_id_user in chat_id_all_users:
+                if message.video:
+                    await bot.send_video(chat_id_user[0], video=message.video.file_id, caption=message.caption)
+
+                elif message.photo:
+                    await bot.send_photo(chat_id_user[0], photo=message.photo.file_id, caption=message.caption)
+
+                else:
+                    await bot.send_message(chat_id_user[0], text=message.text)
+
+            # Confirmation message to admin
+            await bot.send_message(message.chat.id, "باموفقیت ارسال شد")
+            
+            # حذف کاربر از وضعیت
+            del user_states[user_id]
+
+            
+            
+        elif user_states[message.chat.id] == 'send_one_media':
+
+            file_id =  await receive_media.get_one_media(message)#get vidio id 
+
+            if file_id:
+                db_manager.insert_path_link('0')
+                path_link = db_manager.fetch_path_link()[0][0]
+                db_manager.insert_path_media((file_id,path_link))
+                await message.reply_text(f'''
+                باموفقیت ذخیره شد 
+                                                        
+                https://t.me/PajPajbot?start={path_link}
+
+    ''', reply_markup=buttons.menu_main())
+                
+                #send message for user
+                await message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_main())
+
+                
+                 # حذف کاربر از وضعیت
+                del user_states[user_id]
+            else:
+
+                await message.reply_text(
+                    """
+                    این فایل ویدیو نیست. یک ویدیو بفرستید
+                    یا دکمه پایان رو بزنید.
+                    """, 
+                    reply_markup=buttons.menu_end()
+                )
+                if message.text == 'پایان':
+                    del user_states[user_id]
+                    await message.reply_text('اوکی اومدیم بیرون الان برات چیکار کنم ', reply_markup=buttons.menu_main())
+
+
+        elif user_states[message.chat.id] == 'send_collective_media':
+
+            
+
+            file_id_list = await receive_media.get_one_media(message)
+
+
+            if message.text == 'پایان' :
+
+                if len(list_file_id) == 0:
+                    del user_states[user_id]
+                    await message.reply_text('اوکی اومدیم بیرون الان برات چیکار کنم ', reply_markup=buttons.menu_main())
+                    return
+                
+                else:
+                    db_manager.insert_path_link('0')
+                    path_link = db_manager.fetch_path_link()[0][0]
+
+                    for link in list_file_id :
+                        db_manager.insert_path_media((link,path_link))
+
+                    await message.reply_text(f'''
+                    باموفقیت ذخیره شد 
+                                                            
+                    https://t.me/PajPajbot?start={path_link}
+
+        ''', reply_markup=buttons.menu_main())
+                    
+                    #send message for user
+                    await message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_main())
+                    del user_states[user_id]
+                    list_file_id = []
+                    return
 
 
 
+            elif isinstance(file_id_list, str):
+                
+                list_file_id.append(file_id_list)
+                await message.reply_text('ذخیره شد فیلم بعدی را ارسال کنید درصورت اتمام اپلود دکمه پایان رو بزنید', reply_markup=buttons.menu_end())
+
+            elif file_id_list == None:
+
+                await message.reply_text(
+                """
+                این فایل ویدیو نیست. یک ویدیو بفرستید
+                یا دکمه پایان رو بزنید.
+                اگر ویدیویی فرستادید ذخیره شده دکمه پیایان رو بزنید
+                """, 
+                reply_markup=buttons.menu_end()
+            )
+                
+        
 
 
     
-
-
 
 
 
@@ -187,69 +282,23 @@ async def hande_callback_query(client, callback_query):
     if callback_query.data == 'one_upload_movie':
         await notification.delete()# delete menu
 
-        await callback_query.message.reply_text('فیلم مورد نظر خود را بفرس:')# send message for user 
-        
-        resulte_response = await response.respons_text(bot, 1655307519)# get response
-        
-        file_id =  await receive_media.get_one_media(resulte_response)#get vidio id 
 
-        if file_id:
-            db_manager.insert_path_link('0')
-            path_link = db_manager.fetch_path_link()[0][0]
-            db_manager.insert_path_media((file_id,path_link))
-            await callback_query.message.reply_text(f'''
-            باموفقیت ذخیره شد 
-                                                    
-            https://t.me/PajPajbot?start={path_link}
-
-''', reply_markup=buttons.menu_main())
-            
-            #send message for user
-            await callback_query.message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_main())
-    
-        else :
-            
-            #send message for user
-            await callback_query.message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_main())
-
-            
+        user_states[callback_query.message.chat.id] = 'send_one_media'
+        await callback_query.message.reply_text('فیلم مورد نظر خود را بفرس:', reply_markup=buttons.menu_end())# send message for user 
+        return
         
+            
 
     # get loop movie 
     elif callback_query.data == 'collective_upload_movie':
-
+        
         await notification.delete()# delete menu
+        user_states[callback_query.message.chat.id] = 'send_collective_media'
         
-        notification = await callback_query.message.reply_text('فیلم مورد نظر خود را بفرس:')# send message for user 
-
-        resulte_response = await response.respons_text(bot, 1655307519)# get response
-        file_id_list = await receive_media.get_media_collective(resulte_response)
+        notification = await callback_query.message.reply_text('فیلم مورد نظر خود را بفرس:', reply_markup=buttons.menu_end())# send message for user
         
-        if file_id_list :
-            db_manager.insert_path_link('0')
-            path_link = db_manager.fetch_path_link()[0][0]
-
-            for link in file_id_list :
-                db_manager.insert_path_media((link,path_link))
-
-            await callback_query.message.reply_text(f'''
-            باموفقیت ذخیره شد 
-                                                    
-            https://t.me/PajPajbot?start={path_link}
-
-''', reply_markup=buttons.menu_main())
-            
-            #send message for user
-            await callback_query.message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_main())
+        return
     
-        else :
-            
-            #send message for user
-            await callback_query.message.reply_text("میخوای چکار برات بکنم حاجی", reply_markup=buttons.menu_main())
-
-            
-        
-
 
 
 bot.run()

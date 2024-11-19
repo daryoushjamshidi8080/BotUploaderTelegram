@@ -35,7 +35,7 @@ class Buttons:
         join_chanel_buttons = InlineKeyboardMarkup(
             [
                 [InlineKeyboardButton('🎬کانال اول', url="https://t.me/textchanell90")],
-                [InlineKeyboardButton('🔞کانال دوم', url='https://t.me/dj_vpn80')],
+                [InlineKeyboardButton('🔞کانال دوم', url='https://t.me/fight_club_live')],
                 
             ]
         )
